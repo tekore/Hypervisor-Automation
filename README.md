@@ -41,8 +41,10 @@ https://customerconnect.vmware.com/en/evalcenter?p=free-esxi8
 - Fill out the file 'VCenter_template.json'
 - Mount the VCenter ISO ('VMware-VCSA-all-....iso') and cd into it's directory /vcsa-cli-installer/lin64/
 
-- run ./vcsa-deploy install <TEMPLATE-PATH>/VCenter_template.json --accept-eula --no-ssl-certificate-verification --acknowledge-ceip
-
+- Run the install
+```sh
+./vcsa-deploy install <TEMPLATE-PATH>/VCenter_template.json --accept-eula --no-ssl-certificate-verification --acknowledge-ceip
+```
 
 ## Issues
 
