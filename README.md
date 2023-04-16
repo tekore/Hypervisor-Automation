@@ -31,13 +31,13 @@ https://customerconnect.vmware.com/en/evalcenter?p=free-esxi8
 
 ## Usage
 
-# ESXI
+### ESXI
 - Fill out the file 'ks.cfg'
 - Create a bootable USB using the ESXI ISO above.
 - Copy the files 'boot.cfg' and 'ks.cfg' files onto the ESXI installer USB in the directory '/efi/boot/'.
 - Boot the server from the ESXI installer USB and wait for the install to complete.
 
-#VCenter
+### VCenter
 - Fill out the file 'VCenter_template.json'
 - Mount the VCenter ISO ('VMware-VCSA-all-....iso') and cd into it's directory /vcsa-cli-installer/lin64/
 
