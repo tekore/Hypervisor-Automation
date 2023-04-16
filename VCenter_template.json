@@ -1,0 +1,43 @@
+{
+    "__version": "2.13.0",
+    "__comments": "A Kickstart file to deploy VCenter on an ESXI host.",
+    "new_vcsa": {
+        "esxi": {
+            "hostname": "<ESXI_HOST_IP>",
+            "username": "<ESXI_HOST_USERNAME>",
+            "password": "<ESXI_HOST_PASSWORD>",
+            "deployment_network": "VM Network",
+            "datastore": "datastore1"
+        },
+        "appliance": {
+            "thin_disk_mode": true,
+            "deployment_option": "tiny",
+            "name": "VCenter"
+        },
+        "network": {
+            "ip_family": "ipv4",
+            "mode": "static",
+            "system_name": "<VCENTER_IP>",
+            "ip": "<VCENTER_IP>",
+            "prefix": "24",
+            "gateway": "<GATEWAY>",
+            "dns_servers": [
+                "127.0.0.1"
+            ]
+        },
+        "os": {
+            "password": "<PASSWORD_FOR_VCENTER>",
+	    "time_tools_sync": true,
+            "ssh_enable": false
+        },
+        "sso": {
+            "password": "<PASSWORD_FOR_VCENTER>",
+            "domain_name": "vsphere.local"
+        }
+    },
+    "ceip": {
+        "settings": {
+            "ceip_enabled": false
+        }
+    }
+}
