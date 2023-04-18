@@ -18,6 +18,7 @@ The goals for this repository are:
 
 ## Prerequisites
 - You have physical access to the server and a USB of at least 8GB.
+- You have a seperate PC with network access to the server to run the 'VCenter' steps.
 
 ## ISO Downloads
 VCenter ISO:
@@ -31,7 +32,7 @@ https://customerconnect.vmware.com/en/evalcenter?p=free-esxi8
 
 ## Usage
 ### ESXI
-- Fill out the file 'ks.cfg'
+- Fill out the file 'ks.cfg'.
 - Create a bootable USB using the ESXI ISO above.
 - Copy the files 'boot.cfg' and 'ks.cfg' files onto the ESXI installer USB in the directory '/efi/boot/'.
 - Boot the server from the ESXI installer USB and wait for the install to complete.
