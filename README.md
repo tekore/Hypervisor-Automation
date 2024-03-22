@@ -21,14 +21,10 @@ The goals for this repository are:
 - You have a seperate PC with network access to the server to run the 'VCenter' steps.
 
 ## ISO Downloads
-VCenter ISO:
 ```sh
-https://customerconnect.vmware.com/downloads/get-download?downloadGroup=VC800
+https://customerconnect.vmware.com/evalcenter?p=vsphere-eval-8
 ```
-ESXI ISO:
-```sh
-https://customerconnect.vmware.com/en/evalcenter?p=free-esxi8
-```
+##### Note: You will need to create an account and login for the above link to allow you to download the required ISOs.
 
 ## Usage
 ### ESXI
