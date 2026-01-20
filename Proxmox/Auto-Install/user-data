@@ -1,0 +1,196 @@
+#cloud-config
+autoinstall:
+  version: 1
+  
+  # Locale and keyboard
+  locale: en_GB.UTF-8
+  keyboard:
+    layout: gb
+  
+  # User configuration
+  identity:
+    hostname: axis
+    username: tekore
+    realname: tekore
+    password: $6$GpL0NKZpSxks35Kt$dwoYbtAvb.xkrzL7IRvwIrM1f0f4.iC1p1/7dNxjnYN5OyI67Gzk6G7CblqM0gOuvNC3kHp2WGrvLcx4PeKoM/
+
+  # Network configuration
+  network:
+    version: 2
+    ethernets:
+      eno1:
+        addresses:
+          - 192.168.100.250/24
+        routes:
+          - to: default
+            via: 192.168.100.1
+        nameservers:
+          addresses:
+            - 8.8.8.8
+            - 1.1.1.1
+  
+  # Storage configuration - NVMe only
+  storage:
+    config:
+      # NVMe disk
+      - id: disk-nvme0n1
+        type: disk
+        ptable: gpt
+        path: /dev/nvme0n1
+        wipe: superblock-recursive
+      
+      # EFI partition
+      - id: partition-nvme-efi
+        type: partition
+        device: disk-nvme0n1
+        size: 1G
+        flag: boot
+        grub_device: true
+      
+      - id: format-efi
+        type: format
+        fstype: fat32
+        volume: partition-nvme-efi
+      
+      - id: mount-efi
+        type: mount
+        device: format-efi
+        path: /boot/efi
+      
+      # Boot partition
+      - id: partition-nvme-boot
+        type: partition
+        device: disk-nvme0n1
+        size: 2G
+      
+      - id: format-boot
+        type: format
+        fstype: ext4
+        volume: partition-nvme-boot
+      
+      - id: mount-boot
+        type: mount
+        device: format-boot
+        path: /boot
+      
+      # Root partition
+      - id: partition-nvme-root
+        type: partition
+        device: disk-nvme0n1
+        size: 100G
+      
+      - id: format-root
+        type: format
+        fstype: ext4
+        volume: partition-nvme-root
+      
+      - id: mount-root
+        type: mount
+        device: format-root
+        path: /
+      
+      # DataPool partition
+      - id: partition-nvme-data
+        type: partition
+        device: disk-nvme0n1
+        size: -1
+      
+      - id: format-data
+        type: format
+        fstype: ext4
+        volume: partition-nvme-data
+      
+      - id: mount-data
+        type: mount
+        device: format-data
+        path: /DataPool
+  
+  # SSH configuration
+  ssh:
+    install-server: true
+    allow-pw: true
+  
+  # Package updates
+  package_update: true
+  package_upgrade: true
+  package_reboot_if_required: true
+  packages:
+    - ovn-host
+    - ovn-central
+
+  # User data for first boot
+  user-data:
+    write_files:
+      - path: /tmp/runner_secrets.yml
+        content: |
+          ---
+          # GitHub Runner Secrets
+          github_repo_url: GITHUB_REPO_URL
+          github_runner_name: GITHUB_RUNNER_NAME
+          github_pat: GITHUB_PAT
+        owner: 'root:root'
+        permissions: '0600'
+      
+      - path: /tmp/lxd-preseed.yaml
+        content: |
+          config:
+            core.https_address: 192.168.100.250:8443
+          networks:
+            - config:
+                ipv4.address: 10.0.8.1/24
+                ipv4.nat: "true"
+                ipv4.dhcp.ranges: 10.0.8.2-10.0.8.254
+                dns.domain: lxd
+              description: "Main bridge network"
+              name: lxdbr0
+              type: bridge
+              project: default
+            - config:
+                network: lxdbr0
+              description: "OVN network for load balancers"
+              name: ovnnet
+              type: ovn
+              project: default
+          storage_pools:
+            - config:
+                source: /DataPool
+              description: "Directory-based storage pool"
+              name: datapool
+              driver: dir
+          profiles:
+            - config: {}
+              description: Default LXD profile
+              devices:
+                eth0:
+                  name: eth0
+                  network: lxdbr0
+                  type: nic
+                root:
+                  path: /
+                  pool: datapool
+                  type: disk
+              name: default
+          projects:
+            - config:
+                features.images: "true"
+                features.networks: "true"
+                features.profiles: "true"
+                features.storage.volumes: "true"
+              description: Default LXD project
+              name: default
+        owner: 'root:root'
+        permissions: '0644'
+
+    runcmd:
+      - snap install lxd --channel=latest/stable
+      - lxd waitready
+      - sleep 5
+      - ovs-vsctl set open_vswitch . external_ids:ovn-remote=unix:/var/run/ovn/ovnsb_db.sock
+      - ovs-vsctl set open_vswitch . external_ids:ovn-encap-type=geneve
+      - ovs-vsctl set open_vswitch . external_ids:ovn-encap-ip=127.0.0.1
+      - systemctl restart ovn-controller
+      - sleep 5
+      - getent group lxd | grep -qwF tekore || usermod -aG lxd tekore
+      - cat /tmp/lxd-preseed.yaml | lxd init --preseed
+      - lxc network set lxdbr0 ipv4.ovn.ranges=10.0.8.100-10.0.8.200
+      - systemctl restart snap.lxd.daemon

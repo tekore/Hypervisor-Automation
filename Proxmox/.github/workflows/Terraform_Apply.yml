@@ -1,0 +1,56 @@
+name: Onprem Infrastructure
+run-name: Terraform Build
+on:
+  push:
+  workflow_dispatch:
+jobs:
+  Terraform:
+    name: Run Terraform
+    environment: Selfhosted-runner
+    runs-on: self-hosted
+    defaults:
+      run:
+        working-directory: Terraform
+    env:
+      TF_VAR_r2_access_key: ${{ secrets.R2_ACCESS_KEY }}
+      TF_VAR_r2_secret_key: ${{ secrets.R2_SECRET_KEY }}
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Install NodeJS
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Install AWS CLI
+        run: |
+          if ! command -v aws &> /dev/null; then
+            curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" && unzip awscliv2.zip && sudo ./aws/install
+          else
+            echo "AWS CLI already installed"
+          fi
+
+      - name: Download Variables
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_KEY }}
+        run: aws s3 cp s3://secrets/terraform/vars/HomeOps/HomeOps.tfvars ./HomeOps.tfvars --endpoint-url "https://20daad79d4c8c17a1500d2d1a90b1b03.r2.cloudflarestorage.com"
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.5.0
+
+      - name: Terraform Init
+        run: terraform init -backend-config="access_key=$TF_VAR_r2_access_key" -backend-config="secret_key=$TF_VAR_r2_secret_key"
+
+      - name: Terraform Validate
+        run: terraform validate
+
+      - name: Terraform Plan
+        run: terraform plan -out tfplan -var-file=./HomeOps.tfvars
+
+      - name: Terraform Apply (Main Branch Only)
+        if: github.ref_name == 'main'
+        run: terraform apply -parallelism=1 -auto-approve tfplan
