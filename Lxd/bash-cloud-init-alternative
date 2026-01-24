@@ -4,12 +4,9 @@ set -e
 # Set locale
 localectl set-locale LANG=en_GB.UTF-8
 
-# Set keyboard layout (ignore errors as it's not critical)
-localectl set-keymap gb || true
-
 # Disable SSH password authentication
 sed -i 's/^#\?PasswordAuthentication.*/PasswordAuthentication no/' /etc/ssh/sshd_config
-systemctl restart sshd
+systemctl restart ssh
 
 # Update system and install packages
 apt-get update
