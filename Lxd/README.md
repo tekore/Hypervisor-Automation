@@ -21,3 +21,4 @@ https://ubuntu.com/download/server/thank-you?version=24.04&architecture=amd64&lt
 - Boot the server from the Ubuntu installer USB and type 'yes' when the cloud-init prompt shows
 
 ###### (Note: The user-data file can also be used in various cloud environments)
+###### (Note: A bash alternative script can be used also for ansible pull. This is usful for providers that don't support cloud-init)

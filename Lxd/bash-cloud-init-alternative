@@ -1,0 +1,22 @@
+#!/bin/bash
+set -e
+
+# Set locale
+localectl set-locale LANG=en_GB.UTF-8
+
+# Set keyboard layout
+localectl set-keymap gb
+
+# Disable SSH password authentication
+sed -i 's/^#\?PasswordAuthentication.*/PasswordAuthentication no/' /etc/ssh/sshd_config
+systemctl restart sshd
+
+# Update system and install packages
+apt-get update
+apt-get upgrade -y
+apt-get install -y git ansible
+
+# Run Ansible playbook
+ansible-pull -U https://github.com/tekore/Ansible.git -i localhost, --purge playbooks/provisionNewServer.yml
+
+echo 'Post-installation script completed successfully' >> /var/log/ovh-post-install.log
