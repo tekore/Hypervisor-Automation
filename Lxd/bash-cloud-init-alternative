@@ -15,5 +15,4 @@ apt-get install -y git ansible
 
 # Run Ansible playbook
 ansible-pull -U https://github.com/tekore/Ansible.git -i localhost, --purge playbooks/provisionNewServer.yml
-
-echo 'Post-installation script completed successfully' >> /var/log/ovh-post-install.log
+#ansible-pull -U https://github.com/tekore/Ansible.git -i localhost, playbooks/configureLxd.yml --extra-vars "@path/to/your_vars_file.yml"
