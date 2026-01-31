@@ -17,7 +17,7 @@ https://ubuntu.com/download/server/thank-you?version=24.04&architecture=amd64&lt
 
 ## Usage
 - Create a bootable Ubuntu-server USB and another USB called 'CIDATA'
-- Custom the file 'user-data' to fit your personal install (use mine as an example)
+- Custom the file 'user-data' to fit your personal install
 - Boot the server from the Ubuntu installer USB and type 'yes' when the cloud-init prompt shows
 
 ###### (Note: The user-data file can also be used in various cloud environments)
